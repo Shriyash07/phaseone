@@ -33,7 +33,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LiveThreatFeed } from '@/components/live-threat-feed';
 import { Logo } from '@/components/logo';
 
 const navItems = [
@@ -134,7 +133,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </div>
         </header>
         <main className="flex-1 overflow-auto p-4 md:p-6">{children}</main>
-        <LiveThreatFeed />
       </SidebarInset>
     </SidebarProvider>
   );
