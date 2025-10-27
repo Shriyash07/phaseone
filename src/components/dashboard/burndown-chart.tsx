@@ -16,8 +16,21 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ChartTooltipContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { burndownData } from '@/lib/data';
+import type { ChartConfig } from '@/components/ui/chart';
+
+const chartConfig = {
+  open: {
+    label: 'Open',
+    color: 'hsl(var(--primary))',
+  },
+  closed: {
+    label: 'Closed',
+    color: 'hsl(var(--accent))',
+  },
+} satisfies ChartConfig;
+
 
 export function BurndownChart() {
   return (
@@ -30,8 +43,8 @@ export function BurndownChart() {
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={burndownData}>
+          <ChartContainer config={chartConfig} className="w-full h-full">
+            <AreaChart data={burndownData} accessibilityLayer>
               <defs>
                 <linearGradient id="colorOpen" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />
@@ -75,7 +88,7 @@ export function BurndownChart() {
                 name="Closed"
               />
             </AreaChart>
-          </ResponsiveContainer>
+          </ChartContainer>
         </div>
       </CardContent>
     </Card>

@@ -16,8 +16,21 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ChartTooltipContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { heatmapData } from '@/lib/data';
+import type { ChartConfig } from '@/components/ui/chart';
+
+const chartConfig = {
+  risk: {
+    label: 'Risk Score',
+    color: 'hsl(var(--primary))',
+  },
+  vulnerabilities: {
+    label: 'Vulnerabilities',
+    color: 'hsl(var(--accent))',
+  },
+} satisfies ChartConfig;
+
 
 export function RiskHeatmap() {
   return (
@@ -30,8 +43,8 @@ export function RiskHeatmap() {
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={heatmapData}>
+          <ChartContainer config={chartConfig} className="w-full h-full">
+            <BarChart data={heatmapData} accessibilityLayer>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
               <XAxis
                 dataKey="component"
@@ -62,10 +75,10 @@ export function RiskHeatmap() {
                 content={<ChartTooltipContent />}
                 cursor={{ fill: 'hsl(var(--muted) / 0.3)' }}
               />
-              <Bar dataKey="risk" fill="hsl(var(--primary))" name="Risk Score" yAxisId="left" />
-              <Bar dataKey="vulnerabilities" fill="hsl(var(--accent))" name="Vulnerabilities" yAxisId="right" />
+              <Bar dataKey="risk" fill="hsl(var(--primary))" name="Risk Score" yAxisId="left" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="vulnerabilities" fill="hsl(var(--accent))" name="Vulnerabilities" yAxisId="right" radius={[4, 4, 0, 0]} />
             </BarChart>
-          </ResponsiveContainer>
+          </ChartContainer>
         </div>
       </CardContent>
     </Card>
