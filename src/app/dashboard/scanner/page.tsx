@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Shield, AlertTriangle, FileText } from 'lucide-react';
+import { Search, Shield, FileText, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -44,14 +44,17 @@ export default function ScannerPage() {
     setIsLoading(false);
   };
   
-    const getSeverityBadge = (severity: string) => {
-        switch (severity) {
-        case 'Critical': return 'destructive';
-        case 'High': return 'secondary';
-        case 'Medium': return 'default';
-        default: return 'outline';
-        }
-    };
+  const getSeverityBadge = (severity: string) => {
+    switch (severity) {
+      case 'Critical': return 'destructive';
+      case 'High': return 'secondary';
+      case 'Medium': return 'default';
+      case 'Low': return 'outline';
+      default: return 'outline';
+    }
+  };
+  
+  const hasVulnerabilities = scanResult && scanResult.vulnerabilityChecks.some(vc => vc.checks.some(c => !c.passed));
 
   return (
     <div className="space-y-6">
@@ -108,20 +111,32 @@ export default function ScannerPage() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                {scanResult.vulnerabilities.length > 0 ? (
-                <Accordion type="single" collapsible className="w-full">
-                    {scanResult.vulnerabilities.map((vuln, index) => (
+                {hasVulnerabilities ? (
+                <Accordion type="single" collapsible className="w-full" defaultValue="item-0">
+                    {scanResult.vulnerabilityChecks.map((vulnCheck, index) => (
                         <AccordionItem value={`item-${index}`} key={index}>
                             <AccordionTrigger>
                                 <div className="flex items-center gap-4">
-                                     <Badge variant={getSeverityBadge(vuln.riskLevel)} className={cn(vuln.riskLevel === "High" && "bg-orange-500 text-white")}>
-                                        {vuln.riskLevel}
-                                    </Badge>
-                                    <span className="font-semibold">{vuln.type}</span>
+                                    <span className="font-semibold text-lg">{vulnCheck.type}</span>
                                 </div>
                             </AccordionTrigger>
                             <AccordionContent>
-                                <p className="text-muted-foreground p-4">{vuln.description}</p>
+                                <div className="space-y-3 pl-4">
+                                {vulnCheck.checks.map((check, checkIndex) => (
+                                    <div key={checkIndex} className="flex flex-col gap-2 p-3 rounded-md bg-muted/50">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                {check.passed ? <CheckCircle className="h-5 w-5 text-green-500" /> : <XCircle className="h-5 w-5 text-destructive" />}
+                                                <span className="font-semibold">{check.name}</span>
+                                            </div>
+                                            <Badge variant={check.passed ? "outline" : getSeverityBadge(check.riskLevel)} className={cn(!check.passed && check.riskLevel === "High" && "bg-orange-500 text-white")}>
+                                                {check.passed ? "Passed" : check.riskLevel}
+                                            </Badge>
+                                        </div>
+                                        <p className="text-muted-foreground text-sm ml-7">{check.details}</p>
+                                    </div>
+                                ))}
+                                </div>
                             </AccordionContent>
                         </AccordionItem>
                     ))}
@@ -130,7 +145,7 @@ export default function ScannerPage() {
                 <div className="text-center py-8 text-muted-foreground flex flex-col items-center gap-4">
                     <Shield className="h-12 w-12 text-green-500" />
                     <p className="font-semibold">No potential vulnerabilities found.</p>
-                    <p className="text-sm">The scan did not detect any obvious vectors for SQL Injection or XSS.</p>
+                    <p className="text-sm">{scanResult.summary}</p>
                 </div>
                 )}
             </CardContent>

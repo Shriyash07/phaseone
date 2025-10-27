@@ -10,11 +10,18 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-const VulnerabilitySchema = z.object({
-  type: z.enum(['SQL Injection', 'XSS', 'Other']).describe('The type of vulnerability.'),
-  description: z.string().describe('A detailed description of the potential vulnerability and why it is a risk.'),
-  riskLevel: z.enum(['Critical', 'High', 'Medium', 'Low']).describe('The estimated risk level.'),
+const CheckDetailSchema = z.object({
+  name: z.string().describe('The name of the specific check performed (e.g., "Tautology-based injection", "Reflected XSS in URL parameters").'),
+  passed: z.boolean().describe('Whether the check passed (no vulnerability found) or failed (potential vulnerability detected).'),
+  details: z.string().describe('A brief explanation of the check and its result.'),
+  riskLevel: z.enum(['Critical', 'High', 'Medium', 'Low', 'Informational']).describe('The estimated risk level if this check failed.'),
 });
+
+const VulnerabilityCheckSchema = z.object({
+    type: z.enum(['SQL Injection', 'XSS', 'Other']).describe('The type of vulnerability.'),
+    checks: z.array(CheckDetailSchema).describe('A list of specific checks performed for this vulnerability type.'),
+});
+
 
 const ScanUrlInputSchema = z.object({
   url: z.string().url().describe('The URL of the web application to scan.'),
@@ -22,7 +29,7 @@ const ScanUrlInputSchema = z.object({
 export type ScanUrlInput = z.infer<typeof ScanUrlInputSchema>;
 
 const ScanUrlOutputSchema = z.object({
-  vulnerabilities: z.array(VulnerabilitySchema).describe('A list of potential vulnerabilities found.'),
+  vulnerabilityChecks: z.array(VulnerabilityCheckSchema).describe('A list of vulnerability types and the checks performed for each.'),
   summary: z.string().describe('A high-level summary of the security posture of the scanned URL.'),
 });
 export type ScanUrlOutput = z.infer<typeof ScanUrlOutputSchema>;
@@ -45,13 +52,15 @@ const scanUrlFlow = ai.defineFlow(
         URL: ${input.url}
 
         Your task is to:
-        1.  Hypothesize how a user might interact with this page (e.g., forms, URL parameters).
-        2.  Based on the structure and potential inputs, identify possible vectors for SQL Injection and XSS attacks.
-        3.  For each potential vulnerability, provide a description, estimate a risk level.
-        4.  Provide a high-level summary of the URL's security posture based on your analysis.
+        1. Hypothesize how a user might interact with this page (e.g., forms, URL parameters).
+        2. Based on the structure and potential inputs, identify possible vectors for SQL Injection and XSS attacks.
+        3. For both SQL Injection and XSS, perform a series of specific checks. For each check, specify its name, whether it passed or failed (i.e., if a vulnerability was likely found), a risk level, and details about what was checked.
+           - For SQL Injection, include checks like "Tautology-based", "Union-based", "Error-based", and "Blind SQL Injection".
+           - For XSS, include checks for "Reflected XSS in URL parameters", "Stored XSS in forms", and "DOM-based XSS".
+        4. Provide a high-level summary of the URL's security posture based on your analysis.
 
         Do not attempt to actually perform any attacks. This is a static analysis based on common vulnerability patterns.
-        If the page has no obvious input vectors (e.g., a static "About Us" page), state that the risk is low.
+        If the page has no obvious input vectors (e.g., a static "About Us" page), all checks should pass with an 'Informational' risk level.
       `,
       output: {
         schema: ScanUrlOutputSchema
