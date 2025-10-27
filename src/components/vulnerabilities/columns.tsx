@@ -140,7 +140,9 @@ export const columns: ColumnDef<Vulnerability>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <Link href={`/dashboard/vulnerabilities/${vulnerability.id}`}><DropdownMenuItem>View details</DropdownMenuItem></Link>
+            <DropdownMenuItem asChild>
+              <Link href={`/dashboard/vulnerabilities/${vulnerability.id}`}>View details</Link>
+            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => navigator.clipboard.writeText(vulnerability.id)}
             >
