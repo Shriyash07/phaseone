@@ -9,6 +9,7 @@ import {
   User,
   Search,
   Bell,
+  Scan,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -38,6 +39,7 @@ import { Logo } from '@/components/logo';
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/vulnerabilities', label: 'Vulnerabilities', icon: ShieldAlert },
+  { href: '/dashboard/scanner', label: 'Scanner', icon: Scan },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ];
 
@@ -56,7 +58,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <SidebarMenuItem key={item.href}>
                 <Link href={item.href}>
                   <SidebarMenuButton
-                    isActive={pathname === item.href}
+                    isActive={pathname.startsWith(item.href) && (item.href === '/dashboard' ? pathname === item.href : true) }
                     tooltip={item.label}
                   >
                     <item.icon />
