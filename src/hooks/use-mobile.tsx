@@ -11,13 +11,10 @@ export function useIsMobile() {
     const checkSize = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     }
-    // Set the initial value on the client
-    checkSize();
     
-    // Add event listener
+    checkSize();
     window.addEventListener("resize", checkSize)
     
-    // Remove event listener on cleanup
     return () => window.removeEventListener("resize", checkSize)
   }, [])
 
