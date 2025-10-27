@@ -6,42 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/hooks/use-toast';
-import { getScanResult } from '@/app/actions';
-import type { ScanUrlOutput } from '@/ai/flows/scan-url-flow';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { useScan } from '../layout';
 
 export default function ScannerPage() {
   const [url, setUrl] = useState('');
-  const [scanResult, setScanResult] = useState<ScanUrlOutput | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+  const { scanResult, isLoading, startScan } = useScan();
 
-  const handleScan = async () => {
-    if (!url) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Please enter a URL to scan.',
-      });
-      return;
-    }
-    setIsLoading(true);
-    setScanResult(null);
-    const result = await getScanResult({ url });
-
-    if (result.success && result.data) {
-      setScanResult(result.data);
-    } else {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: result.error,
-      });
-    }
-    setIsLoading(false);
+  const handleScan = () => {
+    startScan(url);
   };
   
   const getSeverityBadge = (severity: string) => {
@@ -75,6 +50,7 @@ export default function ScannerPage() {
               onChange={(e) => setUrl(e.target.value)}
               className="flex-1"
               disabled={isLoading}
+              onKeyDown={(e) => e.key === 'Enter' && handleScan()}
             />
             <Button onClick={handleScan} disabled={isLoading}>
               <Search className="mr-2 h-4 w-4" />
@@ -87,7 +63,7 @@ export default function ScannerPage() {
       {isLoading && (
         <Card className="bg-card/30 backdrop-blur-xl border-white/5">
             <CardHeader>
-                <CardTitle>Scan Results</CardTitle>
+                <CardTitle>Scanning...</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
                 <Skeleton className="h-8 w-1/4" />
